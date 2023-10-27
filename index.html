@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+  }
+
+  header {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 1rem 0;
+    position: relative;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .section {
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .section h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .section p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+
+  .section img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 1rem 0;
+    background-color: #333;
+    color: #fff;
+    position: relative;
+  }
+
+  .particle-holder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  canvas {
+    display: block;
+  }
+</style>
+<title>MrCoolGuy640 - Personal Website</title>
+</head>
+<body>
+  <header>
+    <h1>MrCoolGuy640</h1>
+    <p>Minecraft Pro | Newbie Programmer!</p>
+    <canvas class="particle-holder" id="particle-container-header"></canvas>
+  </header>
+
+  <div class="container">
+    <div class="section">
+      <h2>About Me</h2>
+      <p>Welcome to my personal website! I love playing Minecraft, and I am new to coding in HTML / JavaScript / Python! I am currently working on a few projects such as this website!</p>
+    </div>
+
+    <div class="section">
+      <h2>Portfolio</h2>
+      <p>Check out some of my recent projects:</p>
+      <div class="portfolio-item">
+        <p>Coming Soon...</p>
+      </div>
+      <!-- Include images and descriptions of your projects -->
+      <!--<div class="portfolio-item">
+        <img src="project1.jpg" alt="Project 1">
+        <p>Project 1: Description of the project goes here.</p>
+      </div>
+      <div class="portfolio-item">
+        <img src="project2.jpg" alt="Project 2">
+        <p>Project 2: Description of the project goes here.</p>
+      </div>-->
+      <!-- Add more portfolio items as needed -->
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2023 MrCoolGuy640.</p>
+    <canvas class="particle-holder" id="particle-container-footer"></canvas>
+  </footer>
+
+  <script>
+    // Get canvas elements for the header and footer particles
+    const particleCanvasHeader = document.getElementById("particle-container-header");
+    const particleCanvasFooter = document.getElementById("particle-container-footer");
+  
+    // Get 2D rendering contexts for the header and footer canvases
+    const ctxHeader = particleCanvasHeader.getContext("2d");
+    const ctxFooter = particleCanvasFooter.getContext("2d");
+  
+    // Set canvas dimensions to match window dimensions
+    particleCanvasHeader.width = window.innerWidth;
+    particleCanvasHeader.height = window.innerHeight;
+    particleCanvasFooter.width = window.innerWidth;
+    particleCanvasFooter.height = window.innerHeight;
+  
+    // Arrays to store header and footer particles
+    const particlesHeader = [];
+    const particlesFooter = [];
+  
+    // Class representing a particle with its properties and methods
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;                 // X-coordinate of particle
+        this.y = y;                 // Y-coordinate of particle
+        this.color = color;         // Color of the particle
+        this.size = Math.random() * 5 + 2; // Size of the particle
+        this.velocityX = Math.random() * 2 - 1; // Horizontal velocity
+        this.velocityY = Math.random() * 2 - 1; // Vertical velocity
+      }
+  
+      // Update particle's position and size
+      update() {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        this.size -= 0.05; // this CAN result in negative radius throwing an error and breaking the footer code only somehow???
+
+        // Maintain aspect ratio to keep the circle shape
+        this.size = Math.max(this.size, 0.1); // Set a minimum siz
+        
+        if (this.size <= 0) {
+            this.size = 0.1; // Set a minimum size
+        }
+      }
+  
+        // Draw the particle on the canvas
+        draw(ctx) {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+
+            const aspectRatio = ctx.canvas.width / ctx.canvas.height;
+            const radiusX = this.size;
+            const radiusY = this.size * aspectRatio;
+
+            ctx.ellipse(this.x, this.y, radiusX, radiusY, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+  
+    // Function to spawn a new particle within a container
+    function spawnParticle(container, particles) {
+      const x = Math.random() * container.width;
+      const y = Math.random() * container.height;
+      const color = `rgba(255, 255, 255, ${Math.random()})`;
+      const particle = new Particle(x, y, color);
+      particles.push(particle);
+    }
+  
+    // Function to animate particles on a canvas using its context
+    function animateParticles(ctx, particles) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  
+      for (let i = particles.length - 1; i >= 0; i--) {
+        // Remove particles that have shrunk to a size of 0
+        if (particles[i].size <= 0.11) {
+          particles.splice(i, 1);
+        }
+        
+        particles[i].update();
+        particles[i].draw(ctx);
+      }
+    }
+  
+    // Function to adjust canvas dimensions on window resize
+    function resizeCanvas() {
+      particleCanvasHeader.width = window.innerWidth;
+      particleCanvasHeader.height = window.innerHeight;
+      particleCanvasFooter.width = window.innerWidth;
+      particleCanvasFooter.height = window.innerHeight;
+    }
+  
+    // Listen for window resize events and adjust canvas dimensions
+    window.addEventListener("resize", resizeCanvas);
+  
+    // Function to initialize particles and their animation loop
+    function init() {
+      // Spawn new particles for both header and footer
+      spawnParticle(particleCanvasHeader, particlesHeader);
+      spawnParticle(particleCanvasFooter, particlesFooter);
+  
+      // Animate particles using their respective contexts
+      animateParticles(ctxHeader, particlesHeader);
+      animateParticles(ctxFooter, particlesFooter);
+
+      animateParticles(ctxHeader, particlesHeader);
+      animateParticles(ctxFooter, particlesFooter);
+
+      animateParticles(ctxHeader, particlesHeader);
+      animateParticles(ctxFooter, particlesFooter);
+    }
+  
+    // Call the init function every 100 milliseconds using setInterval
+    setInterval(init, 100);
+  </script>
+</body>
+</html>
+</html>
